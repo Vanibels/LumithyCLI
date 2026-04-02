@@ -52,7 +52,9 @@ void saveLogs(std::string commands, logs::t_status status) {
     std::ofstream stream("history.log",std::ios::app);
     if (status == logs::error){
         stream << buffer << " " << commands << " s: " << "failed" << std::endl;
-    } else if(status == logs::succes) {stream << buffer << " s: " << commands << " " << "success" << std::endl;}
+    } else if(status == logs::succes) {
+        stream << buffer << " " << commands << " s: " << "success" << std::endl;
+    }
     stream.close();
     return;
 }
