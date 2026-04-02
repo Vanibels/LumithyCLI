@@ -14,6 +14,13 @@
 #include <winbase.h>
 #include <lmcons.h>   
 
+#define ENABLE_COLORS() { \
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE); \
+        DWORD dwMode = 0; \
+        GetConsoleMode(hOut, &dwMode); \
+        SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING); \
+    }
+
 namespace fs = std::filesystem;
 namespace logs {
     typedef enum{error,succes} t_status;
