@@ -59,7 +59,6 @@ void saveLogs(std::string commands, logs::t_status status) {
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", localTime);
     fs::path path = file / "history.log";
-    std::cout << file.string() << std::endl;
     std::ofstream stream(path.c_str(),std::ios::app);
     if (status == logs::error){
         stream << buffer << " " << commands << " s: " << "failed" << std::endl;
@@ -162,13 +161,9 @@ int main(int argc, char** argv) {
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
     fs::path exePath(buffer);
-    std::cout << exePath.string() << std::endl;
     fs::current_path(exePath.parent_path());
-    std::cout << fs::current_path().string() << std::endl;
     fs::path configPath = exePath.parent_path() / "config.ini";
-    std::cout << configPath.string() << std::endl;
     file = exePath.parent_path();
-    std::cout << file.string() << std::endl;
     std::map<std::string, std::string> ptr = loadConfig("open", configPath.string());
     std::map<std::string, std::string> launch = loadConfig("launch", configPath.string());
     if (argc < 2) {
