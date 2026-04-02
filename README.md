@@ -17,7 +17,7 @@ LumithyCLI is a lightweight Command-Line Interface (CLI) utility written in C++1
 
 ### 2. Add to System PATH
 To call lumithy from any terminal window:
-1. Search for "Edit the system environment variables" in Windows.
+1. Search for "Edit the system environment variables" in Windows or tips `Win + R` and put *`sysdm.cpl`*.
 2. Click Environment Variables.
 3. Under System variables, select Path and click Edit.
 4. Click New and add C:\LumithyCLI.
@@ -25,14 +25,19 @@ To call lumithy from any terminal window:
 
 ### 3. config.ini Structure
 The file must be saved in ANSI encoding and structured as follows:
-
+```ini
 [open]
-ng=C:\Path\To\NationsGlory\Folder
-dev=C:\Users\Luka\Documents\Projects
-
+root=C:\
+windows=C:\Windows
+system32=C:\Windows\System32
+programmes=C:\Program Files
+temp=C:\Windows\Temp
 [launch]
-mc=C:\Program Files\Minecraft\Launcher.exe
-discord=C:\Users\Luka\AppData\Local\Discord\Update.exe --processStart Discord.exe
+notepad=C:\Windows\System32\notepad.exe
+cmd=C:\Windows\System32\cmd.exe
+write=C:\Windows\System32\write.exe
+calc=C:\Windows\System32\calc.exe
+```
 
 ## Usage Guide
 
