@@ -14,13 +14,6 @@
 #include <winbase.h>
 #include <lmcons.h>   
 
-#define ENABLE_COLORS() { \
-        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE); \
-        DWORD dwMode = 0; \
-        GetConsoleMode(hOut, &dwMode); \
-        SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING); \
-    }
-
 namespace fs = std::filesystem;
 namespace logs {
     typedef enum{error,succes} t_status;
@@ -33,6 +26,8 @@ namespace color{
 /*
     -e : opne explorer
  */
+fs::path file;
+
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
     std::map<std::string, std::string> parametres;
     char buffer[2048];
@@ -57,12 +52,15 @@ std::map<std::string, std::string> loadConfig(const std::string& section, const 
     }
     return parametres;
 }
+
 void saveLogs(std::string commands, logs::t_status status) {
     std::time_t now = std::time(0);
     std::tm* localTime = std::localtime(&now);
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", localTime);
-    std::ofstream stream("history.log",std::ios::app);
+    fs::path path = file / "history.log";
+    std::cout << file.string() << std::endl;
+    std::ofstream stream(path.c_str(),std::ios::app);
     if (status == logs::error){
         stream << buffer << " " << commands << " s: " << "failed" << std::endl;
     } else if(status == logs::succes) {
@@ -71,6 +69,7 @@ void saveLogs(std::string commands, logs::t_status status) {
     stream.close();
     return;
 }
+
 void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
     if (argc < 3){
         std::cout << color::red << "This command require an argument" << std::endl << color::reset;
@@ -155,13 +154,23 @@ void showHelp(){
 }
 
 int main(int argc, char** argv) {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     displayLogo();
-    fs::path runPath(argv[0]);
-    runPath = fs::absolute(runPath);
-    runPath = runPath.parent_path();
-    runPath = runPath / "config.ini";
-    std::map<std::string, std::string> ptr = loadConfig("open", runPath.string());
-    std::map<std::string, std::string> launch = loadConfig("launch", runPath.string());
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    fs::path exePath(buffer);
+    std::cout << exePath.string() << std::endl;
+    fs::current_path(exePath.parent_path());
+    std::cout << fs::current_path().string() << std::endl;
+    fs::path configPath = exePath.parent_path() / "config.ini";
+    std::cout << configPath.string() << std::endl;
+    file = exePath.parent_path();
+    std::cout << file.string() << std::endl;
+    std::map<std::string, std::string> ptr = loadConfig("open", configPath.string());
+    std::map<std::string, std::string> launch = loadConfig("launch", configPath.string());
     if (argc < 2) {
         std::cout << color::red << "No argument error" << std::endl << color::reset;
         showHelp();
@@ -178,7 +187,7 @@ int main(int argc, char** argv) {
         }
         return 1;
     }
-    if (command == "help") {
+    if (command == "-h") {
         showHelp();
     } else if (command == "-o") {
         handleOpen(argc, argv, ptr);
@@ -187,11 +196,11 @@ int main(int argc, char** argv) {
     } else if (command == "-r") {
         std::string cmd = "reload ";
         std::cout << "Relancement de la config..." << std::endl;
-        ptr = loadConfig("open", runPath.string());
-        launch = loadConfig("launch", runPath.string());
+        ptr = loadConfig("open", configPath.string());
+        launch = loadConfig("launch", configPath.string());
         saveLogs(cmd,logs::succes);
     } else if (command == "-c") {
-        fs::path config = fs::current_path()  / "config.ini";
+        fs::path config = configPath;
         std::string cmd;
         cmd += "notepad " + config.string();
         system(cmd.c_str());
