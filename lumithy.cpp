@@ -156,7 +156,10 @@ void showHelp(){
 
 int main(int argc, char** argv) {
     displayLogo();
-    fs::path runPath = fs::current_path() / "config.ini";
+    fs::path runPath(argv[0]);
+    runPath = fs::absolute(runPath);
+    runPath = runPath.parent_path();
+    runPath = runPath / "config.ini";
     std::map<std::string, std::string> ptr = loadConfig("open", runPath.string());
     std::map<std::string, std::string> launch = loadConfig("launch", runPath.string());
     if (argc < 2) {
