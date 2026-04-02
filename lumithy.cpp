@@ -136,8 +136,8 @@ void displayLogo() {
 
 void showHelp(){
     // {"-h","-o", "-r", "-c", "-l"
-    std::cout << color::red << "Welcome to Lumithy CLI" << std::endl << color::reset;
-    std::cout << "-h : help" << std::endl << "      => This command show the command help";
+    std::cout << color::red << "Welcome to Lumithy CLI" << std::endl << color::reset << std::endl;
+    std::cout << "-h : help" << std::endl << "      => This command show the command help" << std::endl;
     std::cout << "-o : open" << std::endl << "      => This command in the file explorer a directory that the path are put in the config file" << std::endl << "     => tips : set -c for edit config file";
     std::cout << "-r : reset" << std::endl << "     => This command reload the config file (don't use that not, you can but don't use)" << std::endl;
     std::cout << "-c : config" << std::endl << "    => This command open in notepad the config file" << std::endl;
