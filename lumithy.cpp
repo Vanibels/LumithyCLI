@@ -24,6 +24,7 @@ namespace logs {
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
     std::map<std::string, std::string> parametres;
     char buffer[2048];
+    memset(buffer, 0, 2048);
     DWORD size = GetPrivateProfileStringA(section.c_str(), NULL, "",buffer, 2048, fileName.c_str());
     if (size == 0) {
         DWORD err = GetLastError();
@@ -61,7 +62,7 @@ void saveLogs(std::string commands, logs::t_status status) {
 void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
     if (argc < 3){
         std::cout << "This command require an argument" << std::endl;
-        std::string command = "open";
+        std::string command = "-o";
         saveLogs(command, logs::error);
         return;
     }
@@ -80,7 +81,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         char username[UNLEN +1];
         std::string USER;
         DWORD size = UNLEN +1;
-        std::string command = "open -e";
+        std::string command = "-o -e";
         if (GetUserNameA(username, &size)) {
             USER = username;
         } else {
@@ -93,15 +94,37 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         return;
     }
 }
+
+void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr){
+    if (argc < 3){
+        std::cout << "This command require an argument" << std::endl;
+        std::string command = "-l";
+        saveLogs(command, logs::error);
+        return;
+    }
+    std::string path;
+    std::string cmd;
+    std::string args = argv[2];
+    for (auto const& [key,_path] : ptr) {
+        if (key == args) {
+            path = _path; //cmd.c_str()
+            cmd += "start " + _path;
+            system(cmd.c_str());
+            saveLogs(cmd, logs::succes);
+        }
+    }
+}
+
 int main(int argc, char** argv) {
     fs::path runPath = fs::current_path() / "config.ini";
-    std::map<std::string, std::string> ptr = loadConfig("paths", runPath.string());
+    std::map<std::string, std::string> ptr = loadConfig("open", runPath.string());
+    std::map<std::string, std::string> launch = loadConfig("launch", runPath.string());
     if (argc < 2) {
         std::cout << "No argument error" << std::endl;
         return 1;
     }
 
-    std::vector<std::string> subCommands = {"open", "reload", "config"};
+    std::vector<std::string> subCommands = {"-h","-o", "-r", "-c", "-l"};
     std::string command = argv[1];
     auto _subCommand = std::find(subCommands.begin(), subCommands.end(), command);
     if (_subCommand == subCommands.end()) {
@@ -112,12 +135,22 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if (command == "open") {
+    if (command == "-o") {
         handleOpen(argc, argv, ptr);
-    } else if (command == "reload") {
+    } else if(command == "-l") {
+        handleLaunch(argc, argv, launch);
+    } else if (command == "-r") {
+        std::string cmd = "reload ";
         std::cout << "Relancement de la config..." << std::endl;
-    } else if (command == "config") {
-        std::cout << "Ouverture de la config..." << std::endl;
+        ptr = loadConfig("open", runPath.string());
+        launch = loadConfig("launch", runPath.string());
+        saveLogs(cmd,logs::succes);
+    } else if (command == "-c") {
+        fs::path config = fs::current_path()  / "config.ini";
+        std::string cmd;
+        cmd += "notepad " + config.string();
+        system(cmd.c_str());
+        saveLogs(cmd,logs::succes);
     }
 
     return 0;
