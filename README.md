@@ -43,11 +43,11 @@ calc=C:\Windows\System32\calc.exe
 
 | Command | Description | Example |
 | :--- | :--- | :--- |
-| lumithy -h | Displays the help menu and command list | lumithy -h |
-| lumithy -o <alias> | Opens the associated directory in Explorer | lumithy -o ng |
-| lumithy -l <alias> | Launches the configured application | lumithy -l mc |
-| lumithy -c | Opens the config file directly in Notepad | lumithy -c |
-| lumithy -r | Reloads the configuration file | lumithy -r |
+| lumithy {help / -h} | Displays the help menu and command list | lumithy -h |
+| lumithy {open / -o}  <alias> | Opens the associated directory in Explorer | lumithy -o ng |
+| lumithy {launch / -l}  <alias> | Launches the configured application | lumithy -l mc |
+| lumithy {config / -c} | Opens the config file directly in Notepad | lumithy -c |
+| lumithy {reload / -r} | Reloads the configuration file | lumithy -r |
 
 ## Technical Specifications
 - Language: C++17 / Win32 API.

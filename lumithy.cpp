@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::vector<std::string> subCommands = {"-h","-o", "-r", "-c", "-l"};
+    std::vector<std::string> subCommands = {"-h", "help","-o","open", "-r", "reload", "-c","config" "-l", "launch"};
     std::string command = argv[1];
     auto _subCommand = std::find(subCommands.begin(), subCommands.end(), command);
     if (_subCommand == subCommands.end()) {
@@ -182,19 +182,19 @@ int main(int argc, char** argv) {
         }
         return 1;
     }
-    if (command == "-h") {
+    if (command == "-h" || command == "help") {
         showHelp();
-    } else if (command == "-o") {
+    } else if (command == "-o" || command == "open") {
         handleOpen(argc, argv, ptr);
-    } else if(command == "-l") {
+    } else if(command == "-l" || command == "launch") {
         handleLaunch(argc, argv, launch);
-    } else if (command == "-r") {
+    } else if (command == "-r" || command == "reload") {
         std::string cmd = "reload ";
         std::cout << "Relancement de la config..." << std::endl;
         ptr = loadConfig("open", configPath.string());
         launch = loadConfig("launch", configPath.string());
         saveLogs(cmd,logs::succes);
-    } else if (command == "-c") {
+    } else if (command == "-c" || command == "config") {
         fs::path config = configPath;
         std::string cmd;
         cmd += "notepad " + config.string();
