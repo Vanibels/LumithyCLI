@@ -1,6 +1,6 @@
 namespace logs {
-    typedef enum{error,success,info} t_logLevel;
-    const char* logLevelNames[] = { "ERROR", "SUCCESS", "INFO" };
+    typedef enum{critical, error, info, debug, warn, trace} t_logLevel;
+    const char* logLevelNames[] = {"FATAL", "ERROR", "INFO", "DEBUG", "WARN", "TRACE"};
 }
 
 namespace color{
