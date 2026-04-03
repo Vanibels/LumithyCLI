@@ -48,6 +48,8 @@ calc=C:\Windows\System32\calc.exe
 | lumithy {launch / -l}  <alias> | Launches the configured application | lumithy -l mc |
 | lumithy {config / -c} | Opens the config file directly in Notepad | lumithy -c |
 | lumithy {reload / -r} | Reloads the configuration file | lumithy -r |
+| lumithy {add / -a} | Add new key in specific section of configuration | lumithy -a -o key C:\Program Files\Lumithy\  |
+| lumithy {delete / -d} | Remove a key in specific section of configuration| lumithy -d -l key C:\Program Files\Lumithy\Utils.exe  |
 
 ## Technical Specifications
 - Language: C++17 / Win32 API.
