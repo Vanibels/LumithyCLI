@@ -99,7 +99,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         path = "C:\\Users\\" + USER;
         cmd = "explorer " +  path;
         system(cmd.c_str());
-        saveLogs(command, logs::succes);
+        saveLogs(command, logs::success);
         return;
     }
 }
