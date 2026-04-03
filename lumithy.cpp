@@ -1,3 +1,10 @@
+/**
+ * @author Luka Vanibels
+ * @date 2026-04-04 01:00
+ * @version 2.0
+ * @category CLI
+ * @copyright MIT Licence
+ */
 #include <iostream>
 #include <string>
 #include <vector>
@@ -159,7 +166,7 @@ void displayLogo() {
 void showHelp(){
     std::cout << color::red << "Welcome to Lumithy CLI" << std::endl << color::reset << std::endl;
     std::cout << "-h : help" << std::endl << "      => This command show the command help" << std::endl;
-    std::cout << "-o : open" << std::endl << "      => This command in the file explorer a directory that the path are put in the config file" << std::endl << "     => tips : set -c for edit config file and add -e to open the explorer";
+    std::cout << "-o : open" << std::endl << "      => This command in the file explorer a directory that the path are put in the config file" << std::endl << "     => tips : set -c for edit config file and add -e to open the explorer" << std::endl;
     std::cout << "-r : reset" << std::endl << "     => This command reload the config file (don't use that not, you can but don't use)" << std::endl;
     std::cout << "-c : config" << std::endl << "    => This command open in notepad the config file" << std::endl;
     std::cout << "-l : launch" << std::endl << "    => This command launch an application that the path are put in the config file " << std::endl;
@@ -195,7 +202,7 @@ std::map<std::string, std::string> read(std::string section, std::string file){
 std::string read(std::string section,std::string key, std::string file){
     std::ifstream checkFile(file);
     if (!checkFile.good()) {
-        std::cout << "CRITICAL error" << "the file " << file << " doesn't exist" << std::endl;
+        std::cout << color::red << "CRITICAL error" << "the file " << file << " doesn't exist" << color::reset <<  std::endl;
         saveLogs("[Internal Read Config]", logs::critical);
         return "NOT_FOUND";
     }
@@ -211,11 +218,11 @@ void write(std::string section, std::string key, std::string value,  std::string
     std::map<std::string, std::string> keys = read(section, file);
     if (keys.count(key)) {
         if (keys[key] == value) {
-            std::cout << "Key : " << key << " already contains this value" << std::endl;
-            saveLogs("[Internal config write] : already contain this value for this key",logs::info);
+            std::cout << color::yellow  << "Key : " << key << " already contains this value" << color::reset << std::endl;
+            saveLogs("[Internal config write] : already contain this value for this key",logs::warn);
             return;
         }
-        std::cout << "Key : " << key << " exists and contains : " << keys[key] << " would you like to replace it ? Y/N : ";
+        std::cout << color::yellow  << "Key : " << key << " exists and contains : " << keys[key] << " would you like to replace it ? Y/N : " << color::reset ;
         char input;
         std::cin >> input;
         if (input == 'n' || input == 'N') return;
@@ -231,7 +238,7 @@ void write(std::string section, std::string key, std::string value,  std::string
         WritePrivateProfileStringA(NULL, NULL, NULL, iniPath);
         saveLogs("[Internal config write]",logs::info);
     } else {
-        std::cout << "Write error : " << GetLastError() << std::endl;
+        std::cout << color::red << "Write error : " << GetLastError() << color::reset << std::endl;
         saveLogs("[Internal config write] " + std::to_string(GetLastError()),logs::critical);
     }
 }
@@ -267,7 +274,7 @@ void remove(std::string section, std::string key, std::string file) {
     }
 }
 
-void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {key} {value}
+void handelAdd(int argc, char** argv){
     std::string command;
     for (int i = 1; i < argc; i++) {
         command += " ";
@@ -347,7 +354,7 @@ bool init (int argc, char** argv){
         write("config", "version", VERSION, configPath.string());
         write("config", "log_version", LOG_VERSION, configPath.string());
         write("config", "config_version", CONFIG_VERSION, configPath.string());
-        saveLogs("Config file was missing or corrupted. Created a new one.", logs::warn);
+        saveLogs("Config file was missing or corrupted. Created a new one.", logs::debug);
     }
     std::string app_version = read("config", "version", configPath.string());
     std::string log_version = read("config", "log_version", configPath.string());
@@ -368,8 +375,6 @@ bool init (int argc, char** argv){
     }
     return true;
 }
-
-// Idea : pour la methode write faire en sorte de prendre une chaine de tout les argument derrier et non juste l'argurement argv[3]
 
 int main(int argc, char** argv) {
     bool initialisation = init(argc, argv);
