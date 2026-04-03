@@ -12,7 +12,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winbase.h>
-#include <lmcons.h>   
+#include <lmcons.h>
 #include "utils/utils.h"
 
 namespace fs = std::filesystem;
@@ -147,12 +147,13 @@ void showHelp(){
     std::cout << "-o : open" << std::endl << "      => This command in the file explorer a directory that the path are put in the config file" << std::endl << "     => tips : set -c for edit config file and add -e to open the explorer";
     std::cout << "-r : reset" << std::endl << "     => This command reload the config file (don't use that not, you can but don't use)" << std::endl;
     std::cout << "-c : config" << std::endl << "    => This command open in notepad the config file" << std::endl;
-    std::cout << "-l : launch" << std::endl << "    => This command launch an application that the path are put in the config file " << std::endl << "     => tips : set -c for edit config file" << std::endl;
+    std::cout << "-l : launch" << std::endl << "    => This command launch an application that the path are put in the config file " << std::endl;
+    std::cout << "-a : add" << std::endl << "    => This command add new key in configuration" << std::endl;
+    std::cout << "-d : delete" << std::endl << "    => This command remove a specified key in configuration" << std::endl;
     std::string cmd;
     cmd += "-h ";
     saveLogs(cmd, logs::info);
 }
-
 
 std::map<std::string, std::string> read(std::string section, std::string file){
     std::ifstream checkFile(file);
@@ -216,7 +217,38 @@ void write(std::string section, std::string key, std::string value,  std::string
         saveLogs("[Internal config write]",logs::info);
     } else {
         std::cout << "Write error : " << GetLastError() << std::endl;
-        saveLogs("[Internal config write] " + GetLastError(),logs::critical);
+        saveLogs("[Internal config write] " + std::to_string(GetLastError()),logs::critical);
+    }
+}
+
+void remove(std::string section, std::string key, std::string file) {
+    std::map<std::string, std::string> keys = read(section, file);
+    if (keys.find(key) == keys.end()) {
+        std::cout << color::yellow << "[WARN] Key '" << key << "' not found in section [" << section << "]." << color::reset << std::endl;
+        return;
+    }
+    std::cout << "Are you sure you want to delete '" << key << "' (Value: " << keys[key] << ")? (Y/N): ";
+    char input;
+    std::cin >> input;
+    if (input == 'n' || input == 'N') {
+        std::cout << "Deletion cancelled." << std::endl;
+        return;
+    }
+
+    BOOL success = WritePrivateProfileStringA(
+        section.c_str(),
+        key.c_str(),
+        NULL,
+        file.c_str()
+    );
+
+    if (success) {
+        WritePrivateProfileStringA(NULL, NULL, NULL, file.c_str());
+        std::cout << color::aqua << "Key '" << key << "' successfully removed!" << color::reset << std::endl;
+        saveLogs("Key: " + key + " from [" + section + "]", logs::info);
+    } else {
+        std::cout << color::red << "Removal error: " << GetLastError() << color::reset << std::endl;
+        saveLogs("Error: " + std::to_string(GetLastError()), logs::critical);
     }
 }
 
@@ -240,13 +272,47 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
         return;
     }
     fs::path configPath = file / "config.ini";
+    std::string value;
+    for (int i = 4; i < argc; i++) {
+        value += argv[i];
+        if (i < argc - 1) {
+            value += " ";
+        }
+    }
     if (subArg == "open" || subArg == "-o") {
-        write("open",argv[3],argv[4],configPath.string());
+        write("open",argv[3],value,configPath.string());
     } else{
-        write("launch",argv[3],argv[4],configPath.string());
+        write("launch",argv[3],value,configPath.string());
     }
     saveLogs(command, logs::info);
     return;
+}
+
+void handelRemove(int argc, char** argv) {
+    std::string command;
+    for (int i = 1; i < argc; i++) {
+        command += " ";
+        command += argv[i];
+    }
+    if (argc < 4) {
+        std::cout << color::red << "[ERROR] This command requires 4 arguments." << std::endl;
+        std::cout << "Usage: lumithy -r {-o/-l} {key}" << color::reset << std::endl;
+        saveLogs(command, logs::error);
+        return;
+    }
+    std::string subArg = argv[2];
+    auto subcommand = {"open", "-o", "launch", "-l"};
+    auto _sub = std::find(subcommand.begin(), subcommand.end(), subArg);
+    if (_sub == subcommand.end()) {
+        std::cout << color::red << "Wrong section argument: " << subArg << color::reset << std::endl;
+        saveLogs(command, logs::error);
+        return;
+    }
+    fs::path configPath = file / "config.ini";
+    std::string section = (subArg == "open" || subArg == "-o") ? "open" : "launch";
+    remove(section, argv[3], configPath.string());
+
+    saveLogs(command, logs::info);
 }
 
 bool init (int argc, char** argv){
@@ -260,6 +326,7 @@ bool init (int argc, char** argv){
     fs::path exePath(buffer);
     fs::current_path(exePath.parent_path());
     fs::path configPath = exePath.parent_path() / "config.ini";
+    file = exePath.parent_path();
     if (!fs::is_regular_file(configPath)){
         std::cout << color::red << "Config file missing. Creating default..." << color::reset << std::endl;
         write("config", "version", VERSION, configPath.string());
@@ -284,10 +351,10 @@ bool init (int argc, char** argv){
         std::cout << color::yellow << "[WARN] Log format is outdated. Some logs might display incorrectly." << color::reset << std::endl;
         saveLogs("Log version mismatch detected.", logs::warn);
     }
-    file = exePath.parent_path();
     return true;
 }
 
+// Idea : pour la methode write faire en sorte de prendre une chaine de tout les argument derrier et non juste l'argurement argv[3]
 
 int main(int argc, char** argv) {
     bool initialisation = init(argc, argv);
@@ -307,7 +374,14 @@ int main(int argc, char** argv) {
         showHelp();
         return 1;
     }
-    std::vector<std::string> subCommands = {"-h", "help","-o","open", "-r", "reload", "-c","config", "-l", "launch", "-a", "add"};
+    std::vector<std::string> subCommands = {"-h", "help",
+                                            "-o","open", 
+                                            "-r", "reload", 
+                                            "-c","config", 
+                                            "-l", "launch", 
+                                            "-a", "add",
+                                            "-d", "delete"
+                                        };
     std::string command = argv[1];
     auto _subCommand = std::find(subCommands.begin(), subCommands.end(), command);
     if (_subCommand == subCommands.end()) {
@@ -337,6 +411,8 @@ int main(int argc, char** argv) {
         saveLogs(cmd,logs::info);
     } else if (command == "-a" || command == "add"){
         handelAdd(argc, argv);
+    } else if(command == "-d" || command == "delete") {
+        handelRemove(argc, argv);
     } else {
         std::cout << color::red << "Error : " << command << " isn't an available command " << color::reset;
         showHelp();
