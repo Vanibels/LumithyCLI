@@ -8,5 +8,5 @@ if %errorlevel% neq 0 (
 ) else (
     echo Build succeeded.
 )
-.\out\lumithy
+.\out\lumithy -a -o out C:\Users\vanibels\CodeDev\Cpp\LumithyCLI\out
 pause

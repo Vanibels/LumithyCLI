@@ -174,7 +174,7 @@ std::map<std::string, std::string> read(std::string section, std::string file){
 }
 
 void write(std::string section, std::string key, std::string value,  std::string file) {
-    std::string fullPath = ".\\" + std::string(file); 
+    std::string fullPath = std::string(file); 
     const char* iniPath = fullPath.c_str();
     std::map<std::string, std::string> keys = read(section, file);
     if (keys.count(key)) {
@@ -199,8 +199,8 @@ void write(std::string section, std::string key, std::string value,  std::string
         WritePrivateProfileStringA(NULL, NULL, NULL, iniPath);
         saveLogs("[Internal config write]",logs::info);
     } else {
-        std::cout << "Erreur d'ecriture : " << GetLastError() << std::endl;
-        saveLogs("[Internal config write]",logs::error);
+        std::cout << "Write error : " << GetLastError() << std::endl;
+        saveLogs("[Internal config write] " + GetLastError(),logs::error);
     }
 }
 
@@ -223,7 +223,7 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
         saveLogs(command,logs::error);
         return;
     }
-    fs::path configPath = file.parent_path() / "config.ini";
+    fs::path configPath = file / "config.ini";
     if (subArg == "open" || subArg == "-o") {
         write("open",argv[3],argv[4],configPath.string());
     } else{
