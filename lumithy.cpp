@@ -17,6 +17,9 @@
 
 namespace fs = std::filesystem;
 
+#define LOG_VERSION "0.2.0"
+#define VERSION "2.0"
+#define CONFIG_VERSION "0.1.0"
 fs::path file;
 
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
@@ -44,14 +47,14 @@ std::map<std::string, std::string> loadConfig(const std::string& section, const 
     return parametres;
 }
 
-void saveLogs(std::string commands, logs::t_logLevel logLevel) {
+void saveLogs(std::string logMessage, logs::t_logLevel logLevel) {
     std::time_t now = std::time(0);
     std::tm* localTime = std::localtime(&now);
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", localTime);
     fs::path path = file / "history.log";
     std::ofstream stream(path.c_str(),std::ios::app);
-    stream << buffer << "["<< logs::logLevelNames[logLevel] << "] " << commands << std::endl;
+    stream << buffer << "["<< logs::logLevelNames[logLevel] << "] " << logMessage << std::endl;
     stream.close();
     return;
 }
@@ -60,7 +63,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
     if (argc < 3){
         std::cout << color::red << "This command require an argument" << std::endl << color::reset;
         std::string command = "-o";
-        saveLogs(command, logs::warn);
+        saveLogs(command, logs::error);
         return;
     }
     std::string command;
@@ -108,7 +111,7 @@ void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr)
     if (argc < 3){
         std::cout << color::red << "This command require an argument" << std::endl << color::reset;
         std::string command = "-l";
-        saveLogs(command, logs::warn);
+        saveLogs(command, logs::error);
         return;
     }
     std::string path;
@@ -173,6 +176,19 @@ std::map<std::string, std::string> read(std::string section, std::string file){
     return openAliases;
 }
 
+std::string read(std::string section,std::string key, std::string file){
+    std::ifstream checkFile(file);
+    if (!checkFile.good()) {
+        std::cout << "CRITICAL error" << "the file " << file << " doesn't exist" << std::endl;
+        saveLogs("[Internal Read Config]", logs::critical);
+        return "NOT_FOUND";
+    }
+    const char* iniPath = file.c_str();
+    char value[MAX_PATH];
+    GetPrivateProfileStringA(section.c_str(), key.c_str(), "NOT_FOUND",value, MAX_PATH, iniPath);
+    return std::string(value);
+}
+
 void write(std::string section, std::string key, std::string value,  std::string file) {
     std::string fullPath = std::string(file); 
     const char* iniPath = fullPath.c_str();
@@ -212,7 +228,7 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
     }
     if (argc < 5){
         std::cout << color::red << "This command require 5 arguments" << std::endl << color::reset;
-        saveLogs(command, logs::warn);
+        saveLogs(command, logs::error);
         return;
     }
     std::string subArg = argv[2];
@@ -232,8 +248,8 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
     saveLogs(command, logs::info);
     return;
 }
-// duplicate entrey black-1-natax26 for jey debt_entities_pk
-int main(int argc, char** argv) {
+
+bool init (int argc, char** argv){
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
@@ -244,7 +260,46 @@ int main(int argc, char** argv) {
     fs::path exePath(buffer);
     fs::current_path(exePath.parent_path());
     fs::path configPath = exePath.parent_path() / "config.ini";
+    if (!fs::is_regular_file(configPath)){
+        std::cout << color::red << "Config file missing. Creating default..." << color::reset << std::endl;
+        write("config", "version", VERSION, configPath.string());
+        write("config", "log_version", LOG_VERSION, configPath.string());
+        write("config", "config_version", CONFIG_VERSION, configPath.string());
+        saveLogs("Config file was missing or corrupted. Created a new one.", logs::warn);
+    }
+    std::string app_version = read("config", "version", configPath.string());
+    std::string log_version = read("config", "log_version", configPath.string());
+    std::string config_version = read("config", "config_version", configPath.string());
+    if (app_version == "NOT_FOUND" || log_version == "NOT_FOUND" || config_version == "NOT_FOUND" || config_version != CONFIG_VERSION){
+        std::cout << color::red << "[ERROR] The config file is missing a required section or is incompatible." << color::reset << std::endl;
+        std::cout << color::red << "[ERROR] Execution stopped to prevent errors. Exiting with critical status." << color::reset << std::endl;
+        std::cout << color::yellow << "[WARN] Download the latest config and application here: https://github.com/Vanibels/LumithyCLI" << color::reset << std::endl;
+        saveLogs("Config version mismatch or corruption - Execution halted.", logs::critical);
+        return false;
+    } else if (app_version != VERSION) {
+        std::cout << color::yellow << "[WARN] Version mismatch! You are running " << app_version << ". Latest is " << VERSION << "." << color::reset << std::endl;
+        std::cout << color::yellow << "[WARN] Please download the latest version here: https://github.com/Vanibels/LumithyCLI" << color::reset << std::endl;
+        saveLogs("App version mismatch detected.", logs::warn);
+    } else if (log_version != LOG_VERSION) {
+        std::cout << color::yellow << "[WARN] Log format is outdated. Some logs might display incorrectly." << color::reset << std::endl;
+        saveLogs("Log version mismatch detected.", logs::warn);
+    }
     file = exePath.parent_path();
+    return true;
+}
+
+
+int main(int argc, char** argv) {
+    bool initialisation = init(argc, argv);
+    if (!initialisation){
+        std::cout << "A crital error has detected. The program turn off";
+        return 1;
+    }
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    fs::path exePath(buffer);
+    fs::current_path(exePath.parent_path());
+    fs::path configPath = exePath.parent_path() / "config.ini";
     std::map<std::string, std::string> ptr = loadConfig("open", configPath.string());
     std::map<std::string, std::string> launch = loadConfig("launch", configPath.string());
     if (argc < 2) {
