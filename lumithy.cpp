@@ -61,7 +61,7 @@ void saveLogs(std::string logMessage, logs::t_logLevel logLevel) {
 
 void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
     if (argc < 3){
-        std::cout << color::red << "This command require an argument" << std::endl << color::reset;
+        std::cout << color::red << "This command require an argument : put -h for get list available keys" << std::endl << color::reset;
         std::string command = "-o";
         saveLogs(command, logs::error);
         return;
@@ -85,11 +85,10 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
             break;
         }
     } 
-    if (!found && args != "-e") {
+    if (!found && args != "-e" && args != "-h") {
         std::cout << color::red << "Alias not found!" << std::endl;
         saveLogs(command, logs::error);
-    } 
-    if (args == "-e") {
+    } if (args == "-e") {
         char username[UNLEN +1];
         std::string USER;
         DWORD size = UNLEN +1;
@@ -104,12 +103,20 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         system(cmd.c_str());
         saveLogs(command, logs::info);
         return;
+    } else if (args == "-h") {
+        std::cout << "Available keys : " << std::endl;
+        for (auto const& [_key, _path] : ptr){
+            std::cout << _key << std::endl;
+        }
+        saveLogs(std::string(argv[1]) + std::string(argv[2]), logs::info);
+        return;
     }
+    return;
 }
 
 void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr){
     if (argc < 3){
-        std::cout << color::red << "This command require an argument" << std::endl << color::reset;
+        std::cout << color::red << "This command require an argument : put -h for get list available keys" << std::endl << color::reset;
         std::string command = "-l";
         saveLogs(command, logs::error);
         return;
@@ -117,6 +124,14 @@ void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr)
     std::string path;
     std::string cmd;
     std::string args = argv[2];
+    if (args == "-h") {
+        std::cout << "Available keys : " << std::endl;
+        for (auto const& [_key, _path] : ptr){
+            std::cout << _key << std::endl;
+        }
+        saveLogs(std::string(argv[1]) + std::string(argv[2]), logs::info);
+        return;
+    }
     for (auto const& [key,_path] : ptr) {
         if (key == args) {
             path = _path; //cmd.c_str()
@@ -124,7 +139,7 @@ void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr)
             system(cmd.c_str());
             saveLogs(cmd, logs::info);
         }
-    }
+    } 
 }
 
 void displayLogo() {
