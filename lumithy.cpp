@@ -60,7 +60,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
     if (argc < 3){
         std::cout << color::red << "This command require an argument" << std::endl << color::reset;
         std::string command = "-o";
-        saveLogs(command, logs::error);
+        saveLogs(command, logs::warn);
         return;
     }
     std::string command;
@@ -77,7 +77,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
             path = _path;
             cmd += "explorer " + _path;
             system(cmd.c_str());
-            saveLogs(cmd, logs::success);
+            saveLogs(cmd, logs::info);
             found = true;
             break;
         }
@@ -99,7 +99,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         path = "C:\\Users\\" + USER;
         cmd = "explorer " +  path;
         system(cmd.c_str());
-        saveLogs(command, logs::success);
+        saveLogs(command, logs::info);
         return;
     }
 }
@@ -108,7 +108,7 @@ void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr)
     if (argc < 3){
         std::cout << color::red << "This command require an argument" << std::endl << color::reset;
         std::string command = "-l";
-        saveLogs(command, logs::error);
+        saveLogs(command, logs::warn);
         return;
     }
     std::string path;
@@ -119,7 +119,7 @@ void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr)
             path = _path; //cmd.c_str()
             cmd += "start " + _path;
             system(cmd.c_str());
-            saveLogs(cmd, logs::success);
+            saveLogs(cmd, logs::info);
         }
     }
 }
@@ -147,7 +147,7 @@ void showHelp(){
     std::cout << "-l : launch" << std::endl << "    => This command launch an application that the path are put in the config file " << std::endl << "     => tips : set -c for edit config file" << std::endl;
     std::string cmd;
     cmd += "-h ";
-    saveLogs(cmd, logs::success);
+    saveLogs(cmd, logs::info);
 }
 
 
@@ -200,7 +200,7 @@ void write(std::string section, std::string key, std::string value,  std::string
         saveLogs("[Internal config write]",logs::info);
     } else {
         std::cout << "Write error : " << GetLastError() << std::endl;
-        saveLogs("[Internal config write] " + GetLastError(),logs::error);
+        saveLogs("[Internal config write] " + GetLastError(),logs::critical);
     }
 }
 
@@ -212,7 +212,7 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
     }
     if (argc < 5){
         std::cout << color::red << "This command require 5 arguments" << std::endl << color::reset;
-        saveLogs(command, logs::error);
+        saveLogs(command, logs::warn);
         return;
     }
     std::string subArg = argv[2];
@@ -229,7 +229,7 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
     } else{
         write("launch",argv[3],argv[4],configPath.string());
     }
-    saveLogs(command, logs::success);
+    saveLogs(command, logs::info);
     return;
 }
 // duplicate entrey black-1-natax26 for jey debt_entities_pk
@@ -273,13 +273,13 @@ int main(int argc, char** argv) {
         std::cout << "Relancement de la config..." << std::endl;
         ptr = loadConfig("open", configPath.string());
         launch = loadConfig("launch", configPath.string());
-        saveLogs(cmd,logs::success);
+        saveLogs(cmd,logs::info);
     } else if (command == "-c" || command == "config") {
         fs::path config = configPath;
         std::string cmd;
         cmd += "notepad " + config.string();
         system(cmd.c_str());
-        saveLogs(cmd,logs::success);
+        saveLogs(cmd,logs::info);
     } else if (command == "-a" || command == "add"){
         handelAdd(argc, argv);
     } else {
