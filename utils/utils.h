@@ -4,7 +4,8 @@ namespace logs {
 }
 
 namespace color{
-    const std::string aqua = "\033[1;36m";
-    const std::string reset = "\033[0m";
-    const std::string red = "\033[31m";
+    inline const std::string aqua = "\033[1;36m";
+    inline const std::string reset = "\033[0m";
+    inline const std::string red = "\033[31m";
+    inline const std::string yellow = "\033[33m";
 }
