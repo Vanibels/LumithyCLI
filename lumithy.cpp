@@ -63,17 +63,29 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         saveLogs(command, logs::error);
         return;
     }
+    std::string command;
+    for (int i = 1; i < argc; i++) {
+        command += " ";
+        command += argv[i];
+    }
     std::string path;
     std::string cmd;
     std::string args = argv[2];
+    bool found = false;
     for (auto const& [key,_path] : ptr) {
         if (key == args) {
             path = _path;
             cmd += "explorer " + _path;
             system(cmd.c_str());
             saveLogs(cmd, logs::succes);
+            found = true;
+            break;
         }
-    }
+    } 
+    if (!found && args != "-e") {
+        std::cout << color::red << "Alias not found!" << std::endl;
+        saveLogs(command, logs::error);
+    } 
     if (args == "-e") {
         char username[UNLEN +1];
         std::string USER;
