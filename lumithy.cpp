@@ -13,7 +13,7 @@
 #include <windows.h>
 #include <winbase.h>
 #include <lmcons.h>   
-#include <utils/utils.h>
+#include "utils/utils.h"
 
 namespace fs = std::filesystem;
 
@@ -77,7 +77,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
             path = _path;
             cmd += "explorer " + _path;
             system(cmd.c_str());
-            saveLogs(cmd, logs::succes);
+            saveLogs(cmd, logs::success);
             found = true;
             break;
         }
@@ -119,7 +119,7 @@ void handleLaunch(int argc, char** argv, std::map<std::string, std::string> ptr)
             path = _path; //cmd.c_str()
             cmd += "start " + _path;
             system(cmd.c_str());
-            saveLogs(cmd, logs::succes);
+            saveLogs(cmd, logs::success);
         }
     }
 }
@@ -147,7 +147,7 @@ void showHelp(){
     std::cout << "-l : launch" << std::endl << "    => This command launch an application that the path are put in the config file " << std::endl << "     => tips : set -c for edit config file" << std::endl;
     std::string cmd;
     cmd += "-h ";
-    saveLogs(cmd, logs::succes);
+    saveLogs(cmd, logs::success);
 }
 
 
@@ -229,10 +229,10 @@ void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {ke
     } else{
         write("launch",argv[3],argv[4],configPath.string());
     }
-    saveLogs(command, logs::succes);
+    saveLogs(command, logs::success);
     return;
 }
-
+// duplicate entrey black-1-natax26 for jey debt_entities_pk
 int main(int argc, char** argv) {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
@@ -273,13 +273,13 @@ int main(int argc, char** argv) {
         std::cout << "Relancement de la config..." << std::endl;
         ptr = loadConfig("open", configPath.string());
         launch = loadConfig("launch", configPath.string());
-        saveLogs(cmd,logs::succes);
+        saveLogs(cmd,logs::success);
     } else if (command == "-c" || command == "config") {
         fs::path config = configPath;
         std::string cmd;
         cmd += "notepad " + config.string();
         system(cmd.c_str());
-        saveLogs(cmd,logs::succes);
+        saveLogs(cmd,logs::success);
     } else if (command == "-a" || command == "add"){
         handelAdd(argc, argv);
     } else {

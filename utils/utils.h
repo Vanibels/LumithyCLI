@@ -1,5 +1,5 @@
 namespace logs {
-    typedef enum{error,succes,info} t_logLevel;
+    typedef enum{error,success,info} t_logLevel;
     const char* logLevelNames[] = { "ERROR", "SUCCESS", "INFO" };
 }
 
