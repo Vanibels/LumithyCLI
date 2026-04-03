@@ -13,19 +13,10 @@
 #include <windows.h>
 #include <winbase.h>
 #include <lmcons.h>   
+#include <utils/utils.h>
 
 namespace fs = std::filesystem;
-namespace logs {
-    typedef enum{error,succes} t_status;
-}
-namespace color{
-    const std::string aqua = "\033[1;36m";
-    const std::string reset = "\033[0m";
-    const std::string red = "\033[31m";
-}
-/*
-    -e : opne explorer
- */
+
 fs::path file;
 
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
@@ -53,18 +44,14 @@ std::map<std::string, std::string> loadConfig(const std::string& section, const 
     return parametres;
 }
 
-void saveLogs(std::string commands, logs::t_status status) {
+void saveLogs(std::string commands, logs::t_logLevel logLevel) {
     std::time_t now = std::time(0);
     std::tm* localTime = std::localtime(&now);
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", localTime);
     fs::path path = file / "history.log";
     std::ofstream stream(path.c_str(),std::ios::app);
-    if (status == logs::error){
-        stream << buffer << " " << commands << " s: " << "failed" << std::endl;
-    } else if(status == logs::succes) {
-        stream << buffer << " " << commands << " s: " << "success" << std::endl;
-    }
+    stream << buffer << "["<< logs::logLevelNames[logLevel] << "] " << commands << std::endl;
     stream.close();
     return;
 }
@@ -149,7 +136,7 @@ void showHelp(){
     std::cout << "-l : launch" << std::endl << "    => This command launch an application that the path are put in the config file " << std::endl << "     => tips : set -c for edit config file" << std::endl;
     std::string cmd;
     cmd += "-h ";
-    saveLogs(cmd,logs::succes);
+    saveLogs(cmd, logs::succes);
 }
 
 int main(int argc, char** argv) {
