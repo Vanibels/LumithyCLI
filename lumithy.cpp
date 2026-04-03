@@ -68,7 +68,7 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
     std::string args = argv[2];
     for (auto const& [key,_path] : ptr) {
         if (key == args) {
-            path = _path; //cmd.c_str()
+            path = _path;
             cmd += "explorer " + _path;
             system(cmd.c_str());
             saveLogs(cmd, logs::succes);
@@ -127,7 +127,6 @@ void displayLogo() {
 }
 
 void showHelp(){
-    // {"-h","-o", "-r", "-c", "-l"
     std::cout << color::red << "Welcome to Lumithy CLI" << std::endl << color::reset << std::endl;
     std::cout << "-h : help" << std::endl << "      => This command show the command help" << std::endl;
     std::cout << "-o : open" << std::endl << "      => This command in the file explorer a directory that the path are put in the config file" << std::endl << "     => tips : set -c for edit config file and add -e to open the explorer";
@@ -137,6 +136,89 @@ void showHelp(){
     std::string cmd;
     cmd += "-h ";
     saveLogs(cmd, logs::succes);
+}
+
+
+std::map<std::string, std::string> read(std::string section, std::string file){
+    std::ifstream checkFile(file);
+    if (!checkFile.good()) {
+        std::ofstream createFile(file);
+        createFile << "[open]" << std::endl;
+        createFile << "[launch]" << std::endl;
+        createFile.close();
+    }
+    const char* iniPath = file.c_str();
+    std::map<std::string, std::string> openAliases;
+    char buffer[2048]; 
+    GetPrivateProfileStringA(section.c_str(), NULL, "", buffer, 2048, iniPath);
+    char* key = buffer;
+    while (*key != '\0') {
+        char value[MAX_PATH];
+        GetPrivateProfileStringA(section.c_str(), key, "NOT_FOUND", value, MAX_PATH, iniPath);
+        openAliases[key] = value;
+        key += strlen(key) + 1;
+    }
+    return openAliases;
+}
+
+void write(std::string section, std::string key, std::string value,  std::string file) {
+    std::string fullPath = ".\\" + std::string(file); 
+    const char* iniPath = fullPath.c_str();
+    std::map<std::string, std::string> keys = read(section, file);
+    if (keys.count(key)) {
+        if (keys[key] == value) {
+            std::cout << "Key : " << key << " already contains this value" << std::endl;
+            saveLogs("[Internal config write] : already contain this value for this key",logs::info);
+            return;
+        }
+        std::cout << "Key : " << key << " exists and contains : " << keys[key] << " would you like to replace it ? Y/N : ";
+        char input;
+        std::cin >> input;
+        if (input == 'n' || input == 'N') return;
+    }
+    BOOL success = WritePrivateProfileStringA(
+        section.c_str(), 
+        key.c_str(), 
+        value.c_str(), 
+        iniPath
+    );
+
+    if (success) {
+        WritePrivateProfileStringA(NULL, NULL, NULL, iniPath);
+        saveLogs("[Internal config write]",logs::info);
+    } else {
+        std::cout << "Erreur d'ecriture : " << GetLastError() << std::endl;
+        saveLogs("[Internal config write]",logs::error);
+    }
+}
+
+void handelAdd(int argc, char** argv){ // lumithy -a {-o - open/-l - launch} {key} {value}
+    std::string command;
+    for (int i = 1; i < argc; i++) {
+        command += " ";
+        command += argv[i];
+    }
+    if (argc < 5){
+        std::cout << color::red << "This command require 5 arguments" << std::endl << color::reset;
+        saveLogs(command, logs::error);
+        return;
+    }
+    std::string subArg = argv[2];
+    auto subcommand = {"open","-o","launch", "-l"};
+    auto _sub = std::find(subcommand.begin(), subcommand.end(), subArg);
+    if (_sub == subcommand.end()) {
+        std::cout << color::red << "Wrong argument : " << subArg << color::reset << std::endl;
+        saveLogs(command,logs::error);
+        return;
+    }
+    fs::path configPath = file.parent_path() / "config.ini";
+    if (subArg == "open" || subArg == "-o") {
+        write("open",argv[3],argv[4],configPath.string());
+    } else{
+        write("launch",argv[3],argv[4],configPath.string());
+    }
+    saveLogs(command, logs::succes);
+    return;
 }
 
 int main(int argc, char** argv) {
@@ -158,8 +240,7 @@ int main(int argc, char** argv) {
         showHelp();
         return 1;
     }
-
-    std::vector<std::string> subCommands = {"-h", "help","-o","open", "-r", "reload", "-c","config" "-l", "launch"};
+    std::vector<std::string> subCommands = {"-h", "help","-o","open", "-r", "reload", "-c","config", "-l", "launch", "-a", "add"};
     std::string command = argv[1];
     auto _subCommand = std::find(subCommands.begin(), subCommands.end(), command);
     if (_subCommand == subCommands.end()) {
@@ -187,6 +268,8 @@ int main(int argc, char** argv) {
         cmd += "notepad " + config.string();
         system(cmd.c_str());
         saveLogs(cmd,logs::succes);
+    } else if (command == "-a" || command == "add"){
+        handelAdd(argc, argv);
     } else {
         std::cout << color::red << "Error : " << command << " isn't an available command " << color::reset;
         showHelp();
