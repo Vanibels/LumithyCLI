@@ -159,7 +159,7 @@ void displayLogo() {
     )";
     
     std::cout << color::aqua << logo << color::reset << std::endl;
-    std::cout << " Version 1.0 | Dev by Luka Vanibels" << std::endl;
+    std::cout << " Version "<< VERSION << " | Dev by Luka Vanibels" << std::endl;
     std::cout << "------------------------------------" << std::endl;
 }
 
