@@ -26,6 +26,10 @@ To call lumithy from any terminal window:
 ### 3. config.ini Structure
 The file must be saved in ANSI encoding and structured as follows:
 ```ini
+[config]
+version= 2.0
+log_version= 0.2.0
+config_version= 0.1.0
 [open]
 root=C:\
 windows=C:\Windows
