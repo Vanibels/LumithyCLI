@@ -24,8 +24,9 @@
 
 namespace fs = std::filesystem;
 
-fs::path file;
+fs::path getInitFiles();
 
+fs::path file(getInitFiles());
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
     std::map<std::string, std::string> parametres;
     char buffer[2048];
@@ -162,37 +163,6 @@ void showHelp(){
     saveLogs(cmd, logs::info);
 }
 
-void remove(std::string section, std::string key, std::string file) {
-    std::map<std::string, std::string> keys = read(section, file);
-    if (keys.find(key) == keys.end()) {
-        std::cout << color::yellow << "[WARN] Key '" << key << "' not found in section [" << section << "]." << color::reset << std::endl;
-        return;
-    }
-    std::cout << "Are you sure you want to delete '" << key << "' (Value: " << keys[key] << ")? (Y/N): ";
-    char input;
-    std::cin >> input;
-    if (input == 'n' || input == 'N') {
-        std::cout << "Deletion cancelled." << std::endl;
-        return;
-    }
-
-    BOOL success = WritePrivateProfileStringA(
-        section.c_str(),
-        key.c_str(),
-        NULL,
-        file.c_str()
-    );
-
-    if (success) {
-        WritePrivateProfileStringA(NULL, NULL, NULL, file.c_str());
-        std::cout << color::aqua << "Key '" << key << "' successfully removed!" << color::reset << std::endl;
-        saveLogs("Key: " + key + " from [" + section + "]", logs::info);
-    } else {
-        std::cout << color::red << "Removal error: " << GetLastError() << color::reset << std::endl;
-        saveLogs("Error: " + std::to_string(GetLastError()), logs::critical);
-    }
-}
-
 void handelAdd(int argc, char** argv){
     std::string command;
     for (int i = 1; i < argc; i++) {
@@ -262,12 +232,7 @@ bool init (int argc, char** argv){
     GetConsoleMode(hOut, &dwMode);
     SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     displayLogo();
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    fs::path exePath(buffer);
-    fs::current_path(exePath.parent_path());
-    fs::path configPath = exePath.parent_path() / "config.ini";
-    file = exePath.parent_path();
+    fs::path configPath = file / "config.ini";
     if (!fs::is_regular_file(configPath)){
         std::cout << color::red << "Config file missing. Creating default..." << color::reset << std::endl;
         write("config", "version", VERSION, configPath.string());
@@ -301,6 +266,7 @@ int main(int argc, char** argv) {
         std::cout << "A crital error has detected. The program turn off";
         return 1;
     }
+    file = getInitFiles();
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
     fs::path exePath(buffer);

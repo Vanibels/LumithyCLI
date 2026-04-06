@@ -14,10 +14,6 @@
 namespace fs = std::filesystem;
 
 fs::path getInitFiles() {
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(hOut, &dwMode);
-    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
     fs::path exePath(buffer);
@@ -58,7 +54,6 @@ void saveLogs(std::string logMessage, logs::t_logLevel logLevel) {
     stream.close();
     return;
 }
-
 
 std::string read(std::string section,std::string key, std::string file){
     std::ifstream checkFile(file);
@@ -104,5 +99,35 @@ void write(std::string section, std::string key, std::string value,  std::string
     }
 }
 
+void remove(std::string section, std::string key, std::string file) {
+    std::map<std::string, std::string> keys = read(section, file);
+    if (keys.find(key) == keys.end()) {
+        std::cout << color::yellow << "[WARN] Key '" << key << "' not found in section [" << section << "]." << color::reset << std::endl;
+        return;
+    }
+    std::cout << "Are you sure you want to delete '" << key << "' (Value: " << keys[key] << ")? (Y/N): ";
+    char input;
+    std::cin >> input;
+    if (input == 'n' || input == 'N') {
+        std::cout << "Deletion cancelled." << std::endl;
+        return;
+    }
+
+    BOOL success = WritePrivateProfileStringA(
+        section.c_str(),
+        key.c_str(),
+        NULL,
+        file.c_str()
+    );
+
+    if (success) {
+        WritePrivateProfileStringA(NULL, NULL, NULL, file.c_str());
+        std::cout << color::aqua << "Key '" << key << "' successfully removed!" << color::reset << std::endl;
+        saveLogs("Key: " + key + " from [" + section + "]", logs::info);
+    } else {
+        std::cout << color::red << "Removal error: " << GetLastError() << color::reset << std::endl;
+        saveLogs("Error: " + std::to_string(GetLastError()), logs::critical);
+    }
+}
 
 #endif
