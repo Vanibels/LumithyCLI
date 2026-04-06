@@ -14,7 +14,7 @@
 
 namespace logs {
     typedef enum{critical, error, info, debug, warn, trace} t_logLevel;
-    const char* logLevelNames[];
+    inline const char* logLevelNames[] = {"FATAL", "ERROR", "INFO", "DEBUG", "WARN", "TRACE"};
 }
 
 namespace color{

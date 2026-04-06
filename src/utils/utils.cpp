@@ -13,11 +13,6 @@
 
 namespace fs = std::filesystem;
 
-namespace logs {
-    typedef enum{critical, error, info, debug, warn, trace} t_logLevel;
-    const char* logLevelNames[] = {"FATAL", "ERROR", "INFO", "DEBUG", "WARN", "TRACE"};
-}
-
 fs::path getInitFiles() {
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
