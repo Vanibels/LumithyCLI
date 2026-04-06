@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 if not exist ..\out mkdir ..\out
-g++ ..\src\lumithy.cpp -o ..\out\lumithy.exe -luser32 -ladvapi32 -lshlwapi -std=c++17
+g++ ..\src\lumithy.cpp ..\src\core\Alias.cpp ..\src\utils\utils.cpp -o ..\out\lumithy.exe -luser32 -ladvapi32 -lshlwapi -std=c++17
 
 if %errorlevel% neq 0 (
     echo [ERROR] Build failed. Check your C++ code.
