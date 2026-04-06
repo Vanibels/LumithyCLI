@@ -7,7 +7,7 @@
 
 
 #define LOG_VERSION "0.2.0"
-#define VERSION "2.0"
+#define VERSION "2.1"
 #define CONFIG_VERSION "0.1.0"
 #define WIN32_LEAN_AND_MEAN
 

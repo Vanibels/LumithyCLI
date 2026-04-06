@@ -27,7 +27,7 @@ To call lumithy from any terminal window:
 The file must be saved in ANSI encoding and structured as follows:
 ```ini
 [config]
-version= 2.0
+version= 2.1
 log_version= 0.2.0
 config_version= 0.1.0
 [open]

@@ -26,6 +26,7 @@
 namespace fs = std::filesystem;
 
 fs::path file(getInitFiles());
+
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
     std::map<std::string, std::string> parametres;
     char buffer[2048];

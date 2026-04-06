@@ -11,6 +11,6 @@ if %errorlevel% neq 0 (
 )
 echo [SUCCESS] Build succeeded.
 ..\out\lumithy.exe -a -o test C:\Windows\System32\notepad.exe
-..out\lumithy.exe -a -o -h
+..\out\lumithy.exe -a -o -h
 ..\out\lumithy.exe -d -o test
 pause
