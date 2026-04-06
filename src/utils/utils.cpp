@@ -108,6 +108,10 @@ void remove(std::string section, std::string key, std::string file) {
     std::cout << "Are you sure you want to delete '" << key << "' (Value: " << keys[key] << ")? (Y/N): ";
     char input;
     std::cin >> input;
+    while (input != 'y' && input != 'Y' && input != 'n' && input != 'N') {
+        std::cout << "Invalid input. Please enter Y or N: ";
+        std::cin >> input;
+    }
     if (input == 'n' || input == 'N') {
         std::cout << "Deletion cancelled." << std::endl;
         return;
