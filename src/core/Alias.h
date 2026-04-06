@@ -1,3 +1,5 @@
+#ifndef ALIAS_H
+#define ALIAS_H
 #include <filesystem>
 #include <string>
 
@@ -28,3 +30,4 @@ class Alias {
         fs::path getPath() const;
         std::string get() const;
 };
+#endif

@@ -1,3 +1,5 @@
+#ifndef UTILS_H
+#define UTILS_H
 #include <map>
 #include <string>
 #include <filesystem>
@@ -12,7 +14,7 @@
 
 namespace logs {
     typedef enum{critical, error, info, debug, warn, trace} t_logLevel;
-    const char* logLevelNames[] = {"FATAL", "ERROR", "INFO", "DEBUG", "WARN", "TRACE"};
+    const char* logLevelNames[];
 }
 
 namespace color{
@@ -29,4 +31,5 @@ void write(std::string section, std::string key, std::string value, std::string 
 void remove(std::string section, std::string key, std::string file);
 std::filesystem::path getInitFiles();
 
+#endif
 #endif
