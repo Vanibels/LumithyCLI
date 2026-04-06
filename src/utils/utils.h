@@ -22,6 +22,10 @@ namespace color{
     inline const std::string yellow = "\033[33m";
 }
 
-std::map<std::string, std::string> read(std::string section, std::string file){}
+std::map<std::string, std::string> read(std::string section, std::string file);
+void saveLogs(std::string logMessage, logs::t_logLevel logLevel);
+std::string read(std::string section, std::string key, std::string file);
+void write(std::string section, std::string key, std::string value, std::string file);
+
 
 #endif

@@ -2,11 +2,28 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
+#include <ctime>
+#include <iostream>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winbase.h>
 #include <lmcons.h>
+
+namespace fs = std::filesystem;
+
+fs::path getInitFiles() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    fs::path exePath(buffer);
+    fs::current_path(exePath.parent_path());
+    return exePath.parent_path();
+}
 
 std::map<std::string, std::string> read(std::string section, std::string file){
     std::ifstream checkFile(file);
@@ -29,5 +46,63 @@ std::map<std::string, std::string> read(std::string section, std::string file){
     }
     return openAliases;
 }
+
+void saveLogs(std::string logMessage, logs::t_logLevel logLevel) {
+    std::time_t now = std::time(0);
+    std::tm* localTime = std::localtime(&now);
+    char buffer[80];
+    std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", localTime);
+    fs::path path = getInitFiles() / "history.log";
+    std::ofstream stream(path.c_str(),std::ios::app);
+    stream << buffer << "["<< logs::logLevelNames[logLevel] << "] " << logMessage << std::endl;
+    stream.close();
+    return;
+}
+
+
+std::string read(std::string section,std::string key, std::string file){
+    std::ifstream checkFile(file);
+    if (!checkFile.good()) {
+        std::cout << color::red << "CRITICAL error" << "the file " << file << " doesn't exist" << color::reset <<  std::endl;
+        saveLogs("[Internal Read Config]", logs::critical);
+        return "NOT_FOUND";
+    }
+    const char* iniPath = file.c_str();
+    char value[MAX_PATH];
+    GetPrivateProfileStringA(section.c_str(), key.c_str(), "NOT_FOUND",value, MAX_PATH, iniPath);
+    return std::string(value);
+}
+
+void write(std::string section, std::string key, std::string value,  std::string file) {
+    std::string fullPath = std::string(file); 
+    const char* iniPath = fullPath.c_str();
+    std::map<std::string, std::string> keys = read(section, file);
+    if (keys.count(key)) {
+        if (keys[key] == value) {
+            std::cout << color::yellow  << "Key : " << key << " already contains this value" << color::reset << std::endl;
+            saveLogs("[Internal config write] : already contain this value for this key",logs::warn);
+            return;
+        }
+        std::cout << color::yellow  << "Key : " << key << " exists and contains : " << keys[key] << " would you like to replace it ? Y/N : " << color::reset ;
+        char input;
+        std::cin >> input;
+        if (input == 'n' || input == 'N') return;
+    }
+    BOOL success = WritePrivateProfileStringA(
+        section.c_str(), 
+        key.c_str(), 
+        value.c_str(), 
+        iniPath
+    );
+
+    if (success) {
+        WritePrivateProfileStringA(NULL, NULL, NULL, iniPath);
+        saveLogs("[Internal config write]",logs::info);
+    } else {
+        std::cout << color::red << "Write error : " << GetLastError() << color::reset << std::endl;
+        saveLogs("[Internal config write] " + std::to_string(GetLastError()),logs::critical);
+    }
+}
+
 
 #endif
