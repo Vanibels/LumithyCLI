@@ -1,6 +1,18 @@
+#include <map>
+#include <fstream>
+#include <filesystem>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winbase.h>
+#include <lmcons.h>
+
+
 #define LOG_VERSION "0.2.0"
 #define VERSION "2.0"
 #define CONFIG_VERSION "0.1.0"
+#define WIN32_LEAN_AND_MEAN
+
 
 namespace logs {
     typedef enum{critical, error, info, debug, warn, trace} t_logLevel;
@@ -35,3 +47,5 @@ std::map<std::string, std::string> read(std::string section, std::string file){
     }
     return openAliases;
 }
+
+#endif
