@@ -21,10 +21,9 @@
 #include <winbase.h>
 #include <lmcons.h>
 #include "utils/utils.h"
+#include "core/Alias.h"
 
 namespace fs = std::filesystem;
-
-fs::path getInitFiles();
 
 fs::path file(getInitFiles());
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){
@@ -191,9 +190,11 @@ void handelAdd(int argc, char** argv){
         }
     }
     if (subArg == "open" || subArg == "-o") {
-        write("open",argv[3],value,configPath.string());
+        Alias alias(open, argv[3], value, configPath);
+        alias.save();
     } else{
-        write("launch",argv[3],value,configPath.string());
+        Alias alias(launch, argv[3], value, configPath);
+        alias.save();
     }
     saveLogs(command, logs::info);
     return;
@@ -221,8 +222,9 @@ void handelRemove(int argc, char** argv) {
     }
     fs::path configPath = file / "config.ini";
     std::string section = (subArg == "open" || subArg == "-o") ? "open" : "launch";
-    remove(section, argv[3], configPath.string());
-
+    Alias alias((section == "open") ? open : launch, argv[3], "", configPath);
+    alias.unSave();
+    alias.~Alias();
     saveLogs(command, logs::info);
 }
 
