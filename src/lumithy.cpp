@@ -24,9 +24,6 @@
 
 namespace fs = std::filesystem;
 
-#define LOG_VERSION "0.2.0"
-#define VERSION "2.0"
-#define CONFIG_VERSION "0.1.0"
 fs::path file;
 
 std::map<std::string, std::string> loadConfig(const std::string& section, const std::string& fileName){

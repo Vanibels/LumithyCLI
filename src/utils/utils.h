@@ -1,3 +1,7 @@
+#define LOG_VERSION "0.2.0"
+#define VERSION "2.0"
+#define CONFIG_VERSION "0.1.0"
+
 namespace logs {
     typedef enum{critical, error, info, debug, warn, trace} t_logLevel;
     const char* logLevelNames[] = {"FATAL", "ERROR", "INFO", "DEBUG", "WARN", "TRACE"};
