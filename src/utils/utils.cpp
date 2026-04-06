@@ -124,9 +124,11 @@ void remove(std::string section, std::string key, std::string file) {
         WritePrivateProfileStringA(NULL, NULL, NULL, file.c_str());
         std::cout << color::aqua << "Key '" << key << "' successfully removed!" << color::reset << std::endl;
         saveLogs("Key: " + key + " from [" + section + "]", logs::info);
+        return;
     } else {
         std::cout << color::red << "Removal error: " << GetLastError() << color::reset << std::endl;
         saveLogs("Error: " + std::to_string(GetLastError()), logs::critical);
+        return;
     }
 }
 
