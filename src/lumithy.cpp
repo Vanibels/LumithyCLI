@@ -226,6 +226,7 @@ void handelRemove(int argc, char** argv) {
     alias.unSave();
     alias.~Alias();
     saveLogs(command, logs::info);
+    return;
 }
 
 bool init (int argc, char** argv){
