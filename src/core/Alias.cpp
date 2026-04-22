@@ -24,6 +24,9 @@ void Alias::save() {
     return;
 }
 
+/**
+ * @deprecated
+ */
 void Alias::unSave() {
     remove(aliass[type], name, ConfigFile.string());
     return;
