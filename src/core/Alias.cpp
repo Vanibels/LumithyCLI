@@ -7,6 +7,10 @@
 void Alias::getByName(std::string n){
     name = " ";
     path = " ";
+    if (type == search){
+        return;
+    }
+    
     std::map<std::string, std::string> keys = read(aliass[type], ConfigFile.string());
 
     if (keys.count(n)){
@@ -20,11 +24,13 @@ void Alias::getByName(std::string n){
 }
 
 void Alias::save() {
+    if (type != search)
     write(aliass[type], name, path.string(), ConfigFile.string());
     return;
 }
 
 void Alias::unSave() {
+    if (type != search)
     remove(aliass[type], name, ConfigFile.string());
     return;
 }

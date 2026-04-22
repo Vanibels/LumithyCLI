@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <ctime>
 #include <iostream>
+#include <iomanip>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -12,6 +13,23 @@
 #include <lmcons.h>
 
 namespace fs = std::filesystem;
+
+std::string _googleLensParser_(std::string& input){
+    std::string baseUrl = "https://www.google.com/search?q=";
+    std::ostringstream encoded;
+    encoded.fill('0');
+    encoded << std::hex;
+
+    for (unsigned char c : input) {
+        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+            encoded << c;
+            continue;
+        }
+        encoded << std::uppercase << '%' << std::setw(2) <<int(c) << std::nouppercase;
+    }
+
+    return baseUrl + encoded.str();
+}
 
 fs::path getInitFiles() {
     char buffer[MAX_PATH];

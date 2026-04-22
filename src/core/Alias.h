@@ -5,8 +5,8 @@
 
 namespace fs = std::filesystem;
 
-typedef enum alias {open, launch} t_alias;
-inline const char* aliass[] = {"open","launch"};
+typedef enum alias {open, launch, search} t_alias;
+inline const char* aliass[] = {"open","launch","search"};
 
 class Alias {
     private:

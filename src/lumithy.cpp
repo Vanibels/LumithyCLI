@@ -230,6 +230,34 @@ void handelRemove(int argc, char** argv) {
     return;
 }
 
+void handelSearch(int argc, char** argv) {
+    // lumithy -s Kpop demon hunter
+    std::string command;
+    for (int i = 1; i < argc; i++) {
+        command += " ";
+        command += argv[i];
+    }
+    if (argc < 3) {
+        std::cout << color::red << "[ERROR] This command requires 3 arguments." << std::endl;
+        std::cout << "Usage: lumithy -s {Word or keyword}" << color::reset << std::endl;
+        saveLogs(command, logs::error);
+        return;
+    }
+    std::string query;
+    for (int i = 2; i < argc; i++){
+        query += argv[i];
+        std::cout << "Query: " << query << std::endl;
+        if (i < argc - 1) {
+            query += " ";
+        }
+    }
+    query = _googleLensParser_(query);
+
+    std::string cmd = "start " + query;
+    system(cmd.c_str());
+    saveLogs(command, logs::info);
+}
+
 bool init (int argc, char** argv){
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
@@ -289,7 +317,8 @@ int main(int argc, char** argv) {
                                             "-c","config", 
                                             "-l", "launch", 
                                             "-a", "add",
-                                            "-d", "delete"
+                                            "-d", "delete",
+                                            "-s", "search"
                                         };
     std::string command = argv[1];
     auto _subCommand = std::find(subCommands.begin(), subCommands.end(), command);
@@ -322,6 +351,9 @@ int main(int argc, char** argv) {
         handelAdd(argc, argv);
     } else if(command == "-d" || command == "delete") {
         handelRemove(argc, argv);
+    } else if (command == "-s" || command == "search") {
+        handelSearch(argc, argv);
+        saveLogs(command, logs::info); 
     } else {
         std::cout << color::red << "Error : " << command << " isn't an available command " << color::reset;
         showHelp();

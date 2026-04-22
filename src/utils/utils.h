@@ -30,6 +30,7 @@ std::string read(std::string section, std::string key, std::string file);
 void write(std::string section, std::string key, std::string value, std::string file);
 void remove(std::string section, std::string key, std::string file);
 std::filesystem::path getInitFiles();
+std::string _googleLensParser_(std::string& input);
 
 #endif
 #endif
