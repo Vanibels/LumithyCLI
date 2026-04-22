@@ -72,6 +72,18 @@ void handleOpen(int argc, char** argv, std::map<std::string, std::string> ptr){
         if (key == args) {
             path = _path;
             cmd += "explorer " + _path;
+            // lumithy -o key param
+            if (argc > 3) {
+                std::string param = argv[3];
+                std::string testPath = _path + "\\" + param;
+                fs::path check = testPath;
+                if (!fs::exists(check)) {
+                    std::cout << color::red << "The specified parameter does not exist: " << param << " Ignore parameters" << color::reset << std::endl;
+                    saveLogs(command, logs::warn);
+                }else {
+                    cmd = "explorer " + testPath;
+                }
+            }
             system(cmd.c_str());
             saveLogs(cmd, logs::info);
             found = true;

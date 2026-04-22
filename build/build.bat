@@ -10,5 +10,5 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 echo [SUCCESS] Build succeeded.
-..\out\lumithy.exe -s Test de supervision
+..\out\lumithy.exe -o cours L1\TP
 pause
